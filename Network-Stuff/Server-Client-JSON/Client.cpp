@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "nlohmann/json.hpp"
 
 int main(int argc, char** argv) {
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -30,7 +31,23 @@ int main(int argc, char** argv) {
         return 4;
     }
 
-    std::string message = "Did you receive this?";
+    nlohmann::json test_json;
+    nlohmann::json array_test = nlohmann::json::array({});
+
+    test_json["Test"] = "Hello Server!";
+    test_json["Name"] = "Josh";
+
+    for (int i = 0; i < 10; i++) {
+        nlohmann::json tmp;
+
+        tmp["Num"] = i;
+
+        array_test[i] = tmp;
+    }
+
+    test_json["array"] = array_test;
+
+    std::string message = test_json.dump();
 
     if (send(socket_fd, message.c_str(), message.size(), 0) == -1) {
         std::cerr << "Failed to send\n";
@@ -45,7 +62,21 @@ int main(int argc, char** argv) {
         return 6;
     }
 
-    std::cout << "Received " << buffer << std::endl;
+    nlohmann::json resp;
+
+    try {
+        resp = nlohmann::json::parse(buffer);
+    } catch (nlohmann::json::parse_error e) {
+        std::cerr << "Fail to parse JSON\n";
+        close(socket_fd);
+        return 7;
+    }
+
+    if (resp.contains("Sum")) {
+        std::cout << "Sum is " << resp["Sum"].get<int>() << std::endl;
+    } else {
+        std::cerr << "Unknown response received\n";
+    }
 
     close(socket_fd);
 

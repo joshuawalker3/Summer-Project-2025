@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "nlohmann/json.hpp"
 
 int main(int argc, char** argv) {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -55,9 +56,37 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        std::cout << "Received " << buffer << std::endl;
+        nlohmann::json rec_json;
 
-        std::string response = "I received this";
+        try {
+            rec_json = nlohmann::json::parse(buffer);
+        } catch (nlohmann::json::parse_error e) {
+            std::cerr << "Error parsing JSON\n";
+            close(client_fd);
+            continue;
+        }
+
+        int sum = 0;
+
+        if (rec_json.contains("array")) {
+            std::vector<nlohmann::json> array = rec_json["array"].get<std::vector<nlohmann::json>>();
+
+            std::cout << "Received\n";
+
+            for (auto i : array) {
+                std::cout << i["Num"].get<int>() << std::endl;
+                sum += i["Num"].get<int>();
+            }
+        } else {
+            std::cerr << "Unknown response received\n";
+        }
+
+        nlohmann::json resp;
+
+        resp["Test"] = "Hello client!";
+        resp["Sum"] = sum;
+
+        std::string response = resp.dump();
         send(client_fd, response.c_str(), response.size(), 0);
 
         close(client_fd);
