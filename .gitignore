@@ -33,3 +33,9 @@
 
 # IDE
 .idea/
+
+#CMake
+CMakeCache.txt
+CMakeFiles/
+*.cmake
+MakeFile
