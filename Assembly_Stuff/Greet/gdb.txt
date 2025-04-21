@@ -1,0 +1,268 @@
+Breakpoint 1 at 0x401000: file greet.asm, line 14.
+Starting program: /home/joshuawalker/Summer-Project-2025/Assembly_Stuff/Greet/greet 
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.fedoraproject.org/>
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+
+Breakpoint 1, _start () at greet.asm:14
+14		mov rax, 1
+rax            0x0                 0
+rbx            0x0                 0
+rcx            0x0                 0
+rdx            0x0                 0
+rsi            0x0                 0
+rdi            0x0                 0
+rbp            0x0                 0x0
+rsp            0x7fffffffda10      0x7fffffffda10
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x0                 0
+r12            0x0                 0
+r13            0x0                 0
+r14            0x0                 0
+r15            0x0                 0
+rip            0x401000            0x401000 <_start>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+fs_base        0x0                 0
+gs_base        0x0                 0
+15		mov rdi, 1
+16		mov rsi, prompt
+17		mov rdx, prompt_len
+18		syscall
+rax            0x1                 1
+rbx            0x0                 0
+rcx            0x0                 0
+rdx            0x18                24
+rsi            0x402000            4202496
+rdi            0x1                 1
+rbp            0x0                 0x0
+rsp            0x7fffffffda10      0x7fffffffda10
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x0                 0
+r12            0x0                 0
+r13            0x0                 0
+r14            0x0                 0
+r15            0x0                 0
+rip            0x401019            0x401019 <_start+25>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+fs_base        0x0                 0
+gs_base        0x0                 0
+20		mov rax, 0
+rax            0x18                24
+rbx            0x0                 0
+rcx            0x40101b            4198427
+rdx            0x18                24
+rsi            0x402000            4202496
+rdi            0x1                 1
+rbp            0x0                 0x0
+rsp            0x7fffffffda10      0x7fffffffda10
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x302               770
+r12            0x0                 0
+r13            0x0                 0
+r14            0x0                 0
+r15            0x0                 0
+rip            0x40101b            0x40101b <_start+27>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+fs_base        0x0                 0
+gs_base        0x0                 0
+21		mov rdi, 0
+22		mov rsi, input_buffer
+23		mov rdx, 128
+24		syscall
+rax            0x0                 0
+rbx            0x0                 0
+rcx            0x40101b            4198427
+rdx            0x80                128
+rsi            0x402020            4202528
+rdi            0x0                 0
+rbp            0x0                 0x0
+rsp            0x7fffffffda10      0x7fffffffda10
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x302               770
+r12            0x0                 0
+r13            0x0                 0
+r14            0x0                 0
+r15            0x0                 0
+rip            0x401034            0x401034 <_start+52>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+fs_base        0x0                 0
+gs_base        0x0                 0
+26		mov rbx, rax
+rax            0x5                 5
+rbx            0x0                 0
+rcx            0x401036            4198454
+rdx            0x80                128
+rsi            0x402020            4202528
+rdi            0x0                 0
+rbp            0x0                 0x0
+rsp            0x7fffffffda10      0x7fffffffda10
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x302               770
+r12            0x0                 0
+r13            0x0                 0
+r14            0x0                 0
+r15            0x0                 0
+rip            0x401036            0x401036 <_start+54>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+fs_base        0x0                 0
+gs_base        0x0                 0
+28		mov rax, 1
+rax            0x5                 5
+rbx            0x5                 5
+rcx            0x401036            4198454
+rdx            0x80                128
+rsi            0x402020            4202528
+rdi            0x0                 0
+rbp            0x0                 0x0
+rsp            0x7fffffffda10      0x7fffffffda10
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x302               770
+r12            0x0                 0
+r13            0x0                 0
+r14            0x0                 0
+r15            0x0                 0
+rip            0x401039            0x401039 <_start+57>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+fs_base        0x0                 0
+gs_base        0x0                 0
+29		mov rdi, 1
+30		mov rsi, greet
+31		mov rdx, greet_len
+32		syscall
+rax            0x1                 1
+rbx            0x5                 5
+rcx            0x401036            4198454
+rdx            0x6                 6
+rsi            0x402018            4202520
+rdi            0x1                 1
+rbp            0x0                 0x0
+rsp            0x7fffffffda10      0x7fffffffda10
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x302               770
+r12            0x0                 0
+r13            0x0                 0
+r14            0x0                 0
+r15            0x0                 0
+rip            0x401052            0x401052 <_start+82>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+fs_base        0x0                 0
+gs_base        0x0                 0
+34		mov rax, 1
+rax            0x6                 6
+rbx            0x5                 5
+rcx            0x401054            4198484
+rdx            0x6                 6
+rsi            0x402018            4202520
+rdi            0x1                 1
+rbp            0x0                 0x0
+rsp            0x7fffffffda10      0x7fffffffda10
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x302               770
+r12            0x0                 0
+r13            0x0                 0
+r14            0x0                 0
+r15            0x0                 0
+rip            0x401054            0x401054 <_start+84>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+fs_base        0x0                 0
+gs_base        0x0                 0
+35		mov rdi, 1
+36		mov rsi, input_buffer
+37		mov rdx, rbx
+38		syscall
+rax            0x1                 1
+rbx            0x5                 5
+rcx            0x401054            4198484
+rdx            0x5                 5
+rsi            0x402020            4202528
+rdi            0x1                 1
+rbp            0x0                 0x0
+rsp            0x7fffffffda10      0x7fffffffda10
+r8             0x0                 0
+r9             0x0                 0
+r10            0x0                 0
+r11            0x302               770
+r12            0x0                 0
+r13            0x0                 0
+r14            0x0                 0
+r15            0x0                 0
+rip            0x40106b            0x40106b <_start+107>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+fs_base        0x0                 0
+gs_base        0x0                 0
+40		mov rax, 60
+41		xor rdi, rdi
+42		syscall
+[Inferior 1 (process 5144) exited normally]
