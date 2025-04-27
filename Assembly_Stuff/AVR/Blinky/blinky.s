@@ -2,6 +2,7 @@
 .equ DDRB, 0x04
 .equ PORTB0, 0
 .equ PORTB, 0x05
+;.equ TCCR0B, 0x
 
 .org 0x00
 	rjmp RESET
@@ -13,6 +14,16 @@ RESET:
 LOOP:
 	ldi r16, (1 << PORTB0)
 	out PORTB, r16
+	rcall DELAY
+	rcall DELAY
+	rcall DELAY
+
+	ldi r16, 0x00
+	out PORTB, r16
+	rcall DELAY
+	rcall DELAY
+	rcall DELAY
+
 	rjmp LOOP
 
 DELAY:
