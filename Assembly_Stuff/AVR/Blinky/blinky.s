@@ -1,22 +1,23 @@
-.equ DDB5, 0x05
-.equ DDRB, 0x04
-.equ PORTB5, 5 
-.equ PORTB, 0x05
-.equ TCNT1L, 0x84
-.equ TCNT1H, 0x85
-.equ OCR1AL, 0x88
-.equ OCR1AH, 0x89
-.equ TCCR1A, 0x80
-.equ TCCR1B, 0x81
-.equ CS_BITS, 0x05
-.equ WGM_BITS, 0x08
-.equ TIFR1, 0x16
-.equ OCF1A, 0x01
+.include "constants.inc"
 
-.org 0x00 ;instruction start
-	rjmp RESET 
+.section .text
+.global __start
 
-RESET:
+.org 0x0000 ;RESET interrupt vector
+	rjmp __start 
+
+.org 0x002C ;TIMER1 COMPA Interrupt Register. Manual gives word addresses not byte addresses
+	rjmp PB5_TOGGLE
+
+__start:
+	;initialize stack
+	ldi r16, RAMENDH
+	out SPH, r16
+	ldi r16, RAMENDL
+	out SPL, r16	
+
+	sei ;Initialize global interrupts
+
 	;uinitialize pin PB5 as output
 	ldi r16, (1 << DDB5) 
 	out DDRB, r16	
@@ -39,22 +40,28 @@ RESET:
 	ldi r17, 0x3D
 	ldi r16, 0x09
 	sts OCR1AH, r17
-	sts OCR1AL, r16 
+	sts OCR1AL, r16
 
-LOOP:	
-	;check if flag set. Loop if not, continue if set
-	sbis TIFR1, OCF1A
-	rjmp LOOP	
+	;enable TIMER1_COMPA Interrupt
+	ldi r16, (1 << OCIE1A)
+	sts TIMSK1, r16 
+	
+	ldi r16, (1 << SE)
+	out SMCR, r16	
 
-	;reset flag by writing 1 to it (weird)
-	ldi r16, (1 << OCF1A)
-	out TIFR1, r16
+	;start LED in on
+	ldi r16, (1 << PORTB5)
+	out PORTB, r16
 
+LOOP:
+	sleep
+	rjmp LOOP ;OCRA1 interrupt controls flow
+
+PB5_TOGGLE:
 	;toggle pin PB5
 	in r17, PORTB
 	ldi r16, (1 << PORTB5)
 	eor r17, r16
 	out PORTB, r17	
-
-	rjmp LOOP
+	reti
 	
