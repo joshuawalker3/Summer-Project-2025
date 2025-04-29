@@ -1,0 +1,21 @@
+.equ DDB5, 0x05
+.equ DDRB, 0x04
+.equ PORTB5, 5 
+.equ PORTB, 0x05
+.equ TCNT1L, 0x84
+.equ TCNT1H, 0x85
+.equ OCR1AL, 0x88
+.equ OCR1AH, 0x89
+.equ TCCR1A, 0x80
+.equ TCCR1B, 0x81
+.equ CS_BITS, 0x05
+.equ WGM_BITS, 0x08
+.equ TIMSK1, 0x6F
+.equ OCIE1A, 0x01
+.equ RAMENDH, 0x08
+.equ RAMENDL, 0xFF
+.equ SPH, 0x3E
+.equ SPL, 0x3D
+.equ SE, 0x00
+.equ SMCR, 0x33
+
