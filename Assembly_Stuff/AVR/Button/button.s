@@ -33,8 +33,6 @@ __start:
 	ldi r16, (1 << SE)
 	sts SMCR, r16
 	
-	clr r21
-	
 LOOP:
 	sleep
 	rjmp LOOP
