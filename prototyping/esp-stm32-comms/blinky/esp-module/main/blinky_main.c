@@ -11,8 +11,8 @@ void select_slave(gpio_num_t slave_cs);
 void unselect_slave(gpio_num_t slave_cs);
 esp_err_t master_transmit(uint32_t* data, uint32_t len);
 
-const uint32_t ON_CMD = 0x01;
-const uint32_t OFF_CMD = 0x02;
+const uint8_t ON_CMD = 0x01;
+const uint8_t OFF_CMD = 0x02;
 
 const char *TAG = "spi_comm";
 
@@ -59,7 +59,7 @@ void app_main(void)
     while (true) {
         ESP_LOGI(TAG, "Transmitting ON CMD...");
         select_slave(SLAVE_CS_PIN);
-		esp_err_t status = master_transmit(&ON_CMD, sizeof(ON_CMD));
+		esp_err_t status = master_transmit(&ON_CMD);
 
         if (status != ESP_OK) {
             ESP_LOGE(TAG, "ON Transmission failed");
@@ -72,7 +72,7 @@ void app_main(void)
 
         ESP_LOGI(TAG, "Transmitting OFF CMD...");
         select_slave(SLAVE_CS_PIN);
-		status = master_transmit(&OFF_CMD, sizeof(OFF_CMD));
+		status = master_transmit(&OFF_CMD);
 
         if (status != ESP_OK) {
             ESP_LOGE(TAG, "OFF Transmission failed");
@@ -94,19 +94,17 @@ void unselect_slave(gpio_num_t slave_cs) {
     gpio_set_level(slave_cs, 1);
 }
 
-esp_err_t master_transmit(uint32_t* data, uint32_t len) {
+esp_err_t master_transmit(uint8_t* data) {
     spi_trans_t trans;
-    uint16_t cmd; 
     uint32_t addr = 0;
 
-	cmd = SPI_MASTER_WRITE_DATA_TO_SLAVE_CMD;
-    trans.bits.mosi = len * 32;
-    trans.mosi = data;
-
+	trans.cmd = data;
     trans.bits.cmd = 8;
-    trans.bits.addr = 8;
-    trans.cmd = &cmd;
-    trans.addr = &addr;
+
+    trans.bits.addr = 0;
+    trans.bits.mosi = 0;
+    trans.addr = NULL;
+    trans.mosi = NULL;
 
     return spi_trans(HSPI_HOST, &trans);
 }
