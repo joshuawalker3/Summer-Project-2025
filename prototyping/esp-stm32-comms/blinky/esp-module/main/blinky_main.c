@@ -5,25 +5,28 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 
-#define SLAVE_CS_PIN GPIO_NUM_16
+#define SLAVE_CS_PIN GPIO_NUM_15
 
 void select_slave(gpio_num_t slave_cs);
 void unselect_slave(gpio_num_t slave_cs);
-esp_err_t master_transmit(uint32_t* data, uint32_t len);
+esp_err_t master_transmit(uint32_t* command);
 
-const uint8_t ON_CMD = 0x01;
-const uint8_t OFF_CMD = 0x02;
+const uint32_t ON_CMD = 0x01;
+const uint32_t OFF_CMD = 0x02;
 
 const char *TAG = "spi_comm";
 
 void app_main(void)
 {
+    //uint32_t zero = 0xA5A5A5A5;
+
     ESP_LOGI(TAG, "Starting minimal init");
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
 
     spi_config_t spi_config = {
         .interface.val = SPI_DEFAULT_INTERFACE,
-        .interface.cs_en = 0,           // Disable CS
-        .intr_enable.val = 0,           // No interrupts
+        .intr_enable.val = SPI_MASTER_DEFAULT_INTR_ENABLE,
         .mode = SPI_MASTER_MODE,
         .clk_div = SPI_10MHz_DIV,
         .event_cb = NULL
@@ -35,26 +38,6 @@ void app_main(void)
     } else {
         ESP_LOGI(TAG, "SPI init success");
     }
-
-    gpio_config_t io_15_conf = {
-        .pin_bit_mask = 1 << 15,
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_down_en = GPIO_PULLDOWN_ENABLE,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    gpio_config(&io_15_conf);
-    gpio_set_level(GPIO_NUM_15, 0);  
-
-    gpio_config_t io_16_conf = {
-        .pin_bit_mask = 1 << 16,
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    gpio_config(&io_16_conf);
-    unselect_slave(SLAVE_CS_PIN);
 
     while (true) {
         ESP_LOGI(TAG, "Transmitting ON CMD...");
@@ -94,17 +77,16 @@ void unselect_slave(gpio_num_t slave_cs) {
     gpio_set_level(slave_cs, 1);
 }
 
-esp_err_t master_transmit(uint8_t* data) {
-    spi_trans_t trans;
-    uint32_t addr = 0;
+esp_err_t master_transmit(uint32_t* command) {
+    spi_trans_t trans = {0};
 
-	trans.cmd = data;
-    trans.bits.cmd = 8;
-
-    trans.bits.addr = 0;
-    trans.bits.mosi = 0;
+    trans.cmd = NULL;
     trans.addr = NULL;
-    trans.mosi = NULL;
+    trans.bits.cmd = 0;
+    trans.bits.addr = 0;
+
+    trans.bits.mosi = 8;         
+    trans.mosi = command;         
 
     return spi_trans(HSPI_HOST, &trans);
 }
