@@ -298,9 +298,9 @@ static void MX_SPI1_Init(void)
  80002d4:	4b16      	ldr	r3, [pc, #88]	@ (8000330 <MX_SPI1_Init+0x6c>)
  80002d6:	2200      	movs	r2, #0
  80002d8:	609a      	str	r2, [r3, #8]
-  hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
  80002da:	4b15      	ldr	r3, [pc, #84]	@ (8000330 <MX_SPI1_Init+0x6c>)
- 80002dc:	f44f 6270 	mov.w	r2, #3840	@ 0xf00
+ 80002dc:	f44f 62e0 	mov.w	r2, #1792	@ 0x700
  80002e0:	60da      	str	r2, [r3, #12]
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
  80002e2:	4b13      	ldr	r3, [pc, #76]	@ (8000330 <MX_SPI1_Init+0x6c>)
