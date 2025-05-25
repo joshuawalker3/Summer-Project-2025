@@ -22,6 +22,9 @@
 #include "lwip/sys.h"
 
 #include "my_wifi.h"
+#include "sys/socket.h"
+#include "netdb.h"
+#include "cJSON.h"
 
 /* The examples use WiFi configuration that you can set via project configuration menu
 
@@ -34,6 +37,9 @@
 #endif
 
 #define EXAMPLE_ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
+#define SERVER_IP   "192.168.1.52"
+#define SERVER_PORT 8000
+
 
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
@@ -131,10 +137,119 @@ void wifi_init_sta(void)
     vEventGroupDelete(s_wifi_event_group);
 }
 
+void socket_client_task(void *pvParameters)
+{
+    char rx_buffer[1024];
+    char host_ip[] = SERVER_IP;
+    int addr_family = 0;
+    int ip_protocol = 0;
+
+    struct sockaddr_in dest_addr;
+    dest_addr.sin_addr.s_addr = inet_addr(host_ip);
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = htons(SERVER_PORT);
+    addr_family = AF_INET;
+    ip_protocol = IPPROTO_IP;
+
+    int sock = socket(addr_family, SOCK_STREAM, ip_protocol);
+    if (sock < 0) {
+        ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
+        vTaskDelete(NULL);
+        return;
+    }
+    ESP_LOGI(TAG, "Socket created, connecting to %s:%d", host_ip, SERVER_PORT);
+
+    int err = connect(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+    if (err != 0) {
+        ESP_LOGE(TAG, "Socket unable to connect: errno %d", errno);
+        close(sock);
+        vTaskDelete(NULL);
+        return;
+    }
+    ESP_LOGI(TAG, "Successfully connected");
+
+	uint8_t status = 0x00;
+
+    ESP_LOGI(TAG, "Stack high water mark: %d", uxTaskGetStackHighWaterMark(NULL));
+
+    while (true) {
+        cJSON* root = cJSON_CreateObject();
+
+        if (root == NULL) {
+            ESP_LOGI(TAG, "root null");
+        }
+
+        char status_send[4];
+        snprintf(status_send, sizeof(status_send), "%u", status);
+
+    	if (!cJSON_AddStringToObject(root, "STATUS", status_send)) {
+            ESP_LOGI(TAG, "Failed to add status");
+        }
+
+    	char* payload = cJSON_PrintUnformatted(root);
+
+        if (payload == NULL) {
+            ESP_LOGI(TAG, "Payload null");
+        }
+
+        ESP_LOGI(TAG, "Sending %s", payload);
+    	send(sock, payload, strlen(payload), 0);
+
+        cJSON_free(payload);
+        cJSON_Delete(root);
+
+    	int len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
+
+    	if (len < 0) {
+        	ESP_LOGE(TAG, "recv failed: errno %d", errno);
+    	} else {
+        	rx_buffer[len] = '\0';
+
+        	ESP_LOGI(TAG, "Received: %s", rx_buffer);
+
+			cJSON* received = cJSON_Parse(rx_buffer);
+
+            uint8_t cmd = (uint8_t)(cJSON_GetObjectItem(received, "CMD")->valueint);
+
+            ESP_LOGI(TAG, "Received cmd %d", cmd);
+
+            cJSON_Delete(received);
+    	}
+
+        status ^= 0x01;
+
+        vTaskDelay(1000 /  portTICK_PERIOD_MS);
+    }
+
+    shutdown(sock, 0);
+    close(sock);
+    vTaskDelete(NULL);
+}
+
+void test_cjson_simple() {
+    cJSON* obj = cJSON_CreateObject();
+    cJSON_AddStringToObject(obj, "test", "value");
+    char* out = cJSON_PrintUnformatted(obj);
+    if (out == NULL) {
+        ESP_LOGE(TAG, "cJSON_PrintUnformatted returned NULL");
+    } else {
+        ESP_LOGI(TAG, "cJSON output: %s", out);
+        cJSON_free(out);
+    }
+    cJSON_Delete(obj);
+}
+
+
+
 void app_main()
 {
     ESP_ERROR_CHECK(nvs_flash_init());
 
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
     wifi_init_sta();
+
+    test_cjson_simple();
+
+    xTaskCreate(socket_client_task, "socket_client", 16384, NULL, 5, NULL);
+
 }
