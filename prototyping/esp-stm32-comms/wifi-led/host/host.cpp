@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 
     std::cout << "Listening on port 8000\n";
 
-    uint8_t status = 0;
+    uint8_t status_num = 0;
     sockaddr_in client;
     socklen_t client_address_len = sizeof(client);
     int client_fd = accept(server_fd, (sockaddr*)&client, &client_address_len);
@@ -58,30 +58,36 @@ int main(int argc, char** argv) {
             break;
         }
 
+        std::cout << "Received " << buffer << std::endl;
+
         nlohmann::json rec_json;
 
         try {
             rec_json = nlohmann::json::parse(buffer);
         } catch (nlohmann::json::parse_error e) {
             std::cerr << "Error parsing JSON\n";
-            close(client_fd);
 
             nlohmann::json resp;
 
             resp["CMD"] = 0xFF;
 
             std::string response = resp.dump();
+
+            std::cout << "Sending " << response << std::endl;
+
             send(client_fd, response.c_str(), response.size(), 0);
 
-            continue;
+            close(client_fd);
+
+            break;
         }
 
+        std::string status = "";
+
         if (rec_json.contains("STATUS")) {
-            std::cout << "Received\n";
+            status = rec_json["STATUS"].get<std::string>();
 
-            rec_json["STATUS"].get<uint8_t>();
-
-            std::cout << "STATUS: " << std::endl;
+            std::cout << "STATUS: " << status << std::endl;
         } else {
             std::cerr << "Unknown response received\n";
 
@@ -95,13 +101,16 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        std::cout << "Sending command to ESP..." << std::endl;
+        status_num = static_cast<uint8_t>(std::stoi(status));
 
         nlohmann::json resp;
 
-        resp["CMD"] = status ^ 0x01;
+        resp["CMD"] = status_num ^ 0x01;
 
         std::string response = resp.dump();
+
+        std::cout << "Sending to ESP " << response << std::endl;
+
         send(client_fd, response.c_str(), response.size(), 0);
     }
 
