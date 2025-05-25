@@ -43,3 +43,4 @@ Makefile
 *.local
 build/
 my_wifi.h
+cmake-build-debug
