@@ -25,6 +25,8 @@
 #include "sys/socket.h"
 #include "netdb.h"
 #include "cJSON.h"
+#include "driver/spi.h"
+#include "driver/gpio.h"
 
 /* The examples use WiFi configuration that you can set via project configuration menu
 
@@ -50,9 +52,16 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
+#define SLAVE_CS_PIN GPIO_NUM_15
+
 static const char *TAG = "wifi station";
 
+static const char* SPI_TAG = "spi comm";
+
 static int s_retry_num = 0;
+
+const uint32_t ON_CMD = 0x01;
+const uint32_t OFF_CMD = 0x02;
 
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
@@ -137,6 +146,47 @@ void wifi_init_sta(void)
     vEventGroupDelete(s_wifi_event_group);
 }
 
+void minimal_spi_init(void) {
+    ESP_LOGI(SPI_TAG, "Begin SPI init...");
+
+    spi_config_t spi_config = {
+        .interface.val = SPI_DEFAULT_INTERFACE,
+        .intr_enable.val = SPI_MASTER_DEFAULT_INTR_ENABLE,
+        .mode = SPI_MASTER_MODE,
+        .clk_div = SPI_10MHz_DIV,
+        .event_cb = NULL
+    };
+
+    esp_err_t ret = spi_init(HSPI_HOST, &spi_config);
+    if (ret != ESP_OK) {
+        ESP_LOGE(SPI_TAG, "SPI init failed: %d", ret);
+    } else {
+        ESP_LOGI(SPI_TAG, "SPI init success");
+    }
+}
+
+void select_slave(gpio_num_t slave_cs) {
+    gpio_set_level(slave_cs, 0);
+}
+
+void unselect_slave(gpio_num_t slave_cs) {
+    gpio_set_level(slave_cs, 1);
+}
+
+esp_err_t master_transmit(uint8_t* command) {
+    spi_trans_t trans = {0};
+
+    trans.cmd = NULL;
+    trans.addr = NULL;
+    trans.bits.cmd = 0;
+    trans.bits.addr = 0;
+
+    trans.bits.mosi = 8;         
+    trans.mosi = command;         
+
+    return spi_trans(HSPI_HOST, &trans);
+}
+
 void socket_client_task(void *pvParameters)
 {
     char rx_buffer[1024];
@@ -214,6 +264,10 @@ void socket_client_task(void *pvParameters)
             ESP_LOGI(TAG, "Received cmd %d", cmd);
 
             cJSON_Delete(received);
+
+            select_slave(SLAVE_CS_PIN);
+            master_transmit(&cmd);
+            unselect_slave(SLAVE_CS_PIN);
     	}
 
         status ^= 0x01;
@@ -226,29 +280,16 @@ void socket_client_task(void *pvParameters)
     vTaskDelete(NULL);
 }
 
-void test_cjson_simple() {
-    cJSON* obj = cJSON_CreateObject();
-    cJSON_AddStringToObject(obj, "test", "value");
-    char* out = cJSON_PrintUnformatted(obj);
-    if (out == NULL) {
-        ESP_LOGE(TAG, "cJSON_PrintUnformatted returned NULL");
-    } else {
-        ESP_LOGI(TAG, "cJSON output: %s", out);
-        cJSON_free(out);
-    }
-    cJSON_Delete(obj);
-}
-
 
 
 void app_main()
 {
     ESP_ERROR_CHECK(nvs_flash_init());
 
+    minimal_spi_init();
+
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
     wifi_init_sta();
-
-    test_cjson_simple();
 
     xTaskCreate(socket_client_task, "socket_client", 16384, NULL, 5, NULL);
 
