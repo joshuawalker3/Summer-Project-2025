@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "esp32_spi_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +43,7 @@
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-uint8_t cmd_buffer = 0x00;
+Esp32_SpiHandle esp32_spihandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,7 +90,10 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+  init_esp32_spihandle(&esp32_spihandle, &hspi1, SPI1_CS_Pin);
 
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -231,8 +234,6 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(LED_CTL_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -242,14 +243,29 @@ static void MX_GPIO_Init(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	switch (GPIO_Pin) {
 		case SPI1_CS_Pin:
-			HAL_SPI_Receive(&hspi1, &cmd_buffer, sizeof(uint8_t), HAL_MAX_DELAY);
+			HAL_StatusTypeDef err = esp32_spi_read_cmd(&esp32_spihandle, HAL_MAX_DELAY);
 
-			switch (cmd_buffer & 0xFF) {
+			if (err != HAL_OK) {
+				break;
+			}
+
+			switch (esp32_spihandle.cmd_buffer[0] & 0xFF) {
 				case 0x00:
 					HAL_GPIO_WritePin(LED_CTL_GPIO_Port, LED_CTL_Pin, GPIO_PIN_RESET);
 					break;
 				case 0x01:
 					HAL_GPIO_WritePin(LED_CTL_GPIO_Port, LED_CTL_Pin, GPIO_PIN_SET);
+					break;
+				case 0x03:
+					GPIO_PinState status = HAL_GPIO_ReadPin(LED_CTL_GPIO_Port, LED_CTL_Pin);
+					esp32_spihandle.miso_buffer[0] = (uint8_t)status;
+
+					err = esp32_spi_send_data(&esp32_spihandle, sizeof(uint8_t), HAL_MAX_DELAY);
+
+					if (err != HAL_OK) {
+						break;
+					}
+
 					break;
 				default:
 					break;

@@ -1,0 +1,4 @@
+../Core/Src/esp32_spi_driver.c:10:6:init_esp32_spihandle	24	static
+../Core/Src/esp32_spi_driver.c:15:19:esp32_spi_read_cmd	16	static
+../Core/Src/esp32_spi_driver.c:23:19:esp32_spi_read_data	24	static
+../Core/Src/esp32_spi_driver.c:31:19:esp32_spi_send_data	24	static
