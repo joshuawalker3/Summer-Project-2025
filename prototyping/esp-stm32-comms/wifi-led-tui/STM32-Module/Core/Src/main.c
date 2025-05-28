@@ -256,7 +256,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 				case 0x01:
 					HAL_GPIO_WritePin(LED_CTL_GPIO_Port, LED_CTL_Pin, GPIO_PIN_SET);
 					break;
-				case 0x03:
+				case 0x02:
 					GPIO_PinState status = HAL_GPIO_ReadPin(LED_CTL_GPIO_Port, LED_CTL_Pin);
 					esp32_spihandle.miso_buffer[0] = (uint8_t)status;
 
