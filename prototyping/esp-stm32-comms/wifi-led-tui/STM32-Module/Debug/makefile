@@ -60,8 +60,8 @@ all: main-build
 main-build: STM32-Module.elf secondary-outputs
 
 # Tool invocations
-STM32-Module.elf STM32-Module.map: $(OBJS) $(USER_OBJS) /home/joshuawalker/Summer-Project-2025/prototyping/esp-stm32-comms/wifi-led-simple/STM32-Module/STM32L432KCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "STM32-Module.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/joshuawalker/Summer-Project-2025/prototyping/esp-stm32-comms/wifi-led-simple/STM32-Module/STM32L432KCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32-Module.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+STM32-Module.elf STM32-Module.map: $(OBJS) $(USER_OBJS) /home/joshuawalker/Summer-Project-2025/prototyping/esp-stm32-comms/wifi-led-tui/STM32-Module/STM32L432KCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "STM32-Module.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/joshuawalker/Summer-Project-2025/prototyping/esp-stm32-comms/wifi-led-tui/STM32-Module/STM32L432KCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32-Module.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
