@@ -50,8 +50,6 @@ void socket_client_task(void *pvParameters)
         vTaskDelete(NULL);
     }
 
-	uint8_t status = 0x00;
-
     while (true) {
         int len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
 
@@ -109,9 +107,44 @@ void socket_client_task(void *pvParameters)
             }
 
             break;
-        case 0x02:
+        case 0x02: ; //null statement
+            uint8_t led_status = 0x00;
+
+            char led_status_str[4];
+
+            select_slave(SLAVE_CS_PIN);
+            err = master_transmit(&cmd);
+
+            if (err != ESP_OK) {
+                success = 0x00;
+
+                cJSON_AddStringToObject(root, "ERROR", esp_err_to_name(err));
+
+                ESP_LOGE(TAG, "Error while processing cmd 0x01: %s", esp_err_to_name(err));
+            }
+
+            err = master_read(&led_status, sizeof(uint8_t));
+
+            if (err != ESP_OK) {
+                success = 0x00;
+
+                cJSON_AddStringToObject(root, "ERROR", esp_err_to_name(err));
+
+                ESP_LOGE(TAG, "Error while reading from slave: %s", esp_err_to_name(err));
+            }
+
+            unselect_slave(SLAVE_CS_PIN);
+
+            snprintf(led_status_str, sizeof(led_status_str), "%u", led_status);
+
+            cJSON_AddStringToObject(root, "STATUS", led_status_str);
+
             break;
         default:
+            success = 0x00;
+
+            cJSON_AddStringToObject(root, "ERROR", "Unknown cmd received");
+
             break;
         }
 

@@ -13,4 +13,6 @@ void unselect_slave(gpio_num_t slave_cs);
 
 esp_err_t master_transmit(uint8_t* command);
 
+esp_err_t master_read(uint8_t* data, uint16_t size);
+
 #endif

@@ -45,3 +45,17 @@ esp_err_t master_transmit(uint8_t* command) {
 
     return spi_trans(HSPI_HOST, &trans);
 }
+
+esp_err_t master_read(uint8_t* data, uint16_t size) {
+    spi_trans_t trans = {0};
+
+    trans.cmd = NULL;
+    trans.addr = NULL;
+    trans.bits.cmd = 0;
+    trans.bits.addr = 0;
+
+    trans.bits.miso = size;         
+    trans.miso = data;         
+
+    return spi_trans(HSPI_HOST, &trans);
+}
