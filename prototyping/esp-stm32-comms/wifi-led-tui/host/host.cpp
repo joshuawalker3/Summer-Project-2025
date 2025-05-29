@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include "nlohmann/json.hpp"
 
+void print_menu();
+
 int main(int argc, char** argv) {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -48,6 +50,49 @@ int main(int argc, char** argv) {
     }
 
     while (true) {
+        int choice = 0;
+        bool valid_entry = false;
+
+        nlohmann::json send_cmd;
+
+        while (!valid_entry) {
+            print_menu();
+
+            std::cin >> choice;
+
+            choice--;
+
+            switch (choice) {
+                case 0:
+                    valid_entry = true;
+
+                    send_cmd["CMD"] = 0x00;
+
+                    break;
+                case 1:
+                    valid_entry = true;
+
+                    send_cmd["CMD"] = 0x01;
+
+                    break;
+                case 2:
+                    valid_entry = true;
+
+                    send_cmd["CMD"] = 0x02;
+
+                    break;
+                default:
+                    std::cout << "Please enter a valid option\n";
+                    break;
+            }
+        }
+
+        std::string cmd_json = send_cmd.dump();
+
+        std::cout << "Sending to ESP " << cmd_json << std::endl;
+
+        send(client_fd, cmd_json.c_str(), cmd_json.size(), 0);
+
         std::cout << "Waiting on ESP..." << std::endl;
         char buffer[1024] = {0};
         int bytes_received = recv(client_fd, buffer, sizeof(buffer), 0);
@@ -67,51 +112,36 @@ int main(int argc, char** argv) {
         } catch (nlohmann::json::parse_error e) {
             std::cerr << "Error parsing JSON\n";
 
-            nlohmann::json resp;
-
-            resp["CMD"] = 0xFF;
-
-            std::string response = resp.dump();
-
-            std::cout << "Sending " << response << std::endl;
-
-            send(client_fd, response.c_str(), response.size(), 0);
-
             close(client_fd);
 
             break;
         }
 
-        std::string status = "";
+        uint8_t success_bit;
 
-        if (rec_json.contains("STATUS")) {
-            status = rec_json["STATUS"].get<std::string>();
+        if (rec_json.contains("SUCCESS")) {
+            std::string success = rec_json["SUCCESS"].get<std::string>();
 
-            std::cout << "STATUS: " << status << std::endl;
+            success_bit = static_cast<uint8_t>(std::stoi(success));
         } else {
-            std::cerr << "Unknown response received\n";
-
-            nlohmann::json resp;
-
-            resp["CMD"] = 0xFF;
-
-            std::string response = resp.dump();
-            send(client_fd, response.c_str(), response.size(), 0);
+            std::cout << "Unknown response received\n";
 
             continue;
         }
 
-        status_num = static_cast<uint8_t>(std::stoi(status));
+        if (!success_bit) {
+            std::string err = rec_json["ERROR"].get<std::string>();
 
-        nlohmann::json resp;
+            std::cout << "Received error from esp32: " << err << std::endl;
 
-        resp["CMD"] = status_num ^ 0x01;
+            continue;
+        }
 
-        std::string response = resp.dump();
+        if (rec_json.contains("STATUS")) {
+            std::string led_status = rec_json["STATUS"].get<std::string>();
 
-        std::cout << "Sending to ESP " << response << std::endl;
-
-        send(client_fd, response.c_str(), response.size(), 0);
+            std::cout << "Current status of LED: " << led_status << std::endl;
+        }
     }
 
     if (client_fd) {
@@ -120,4 +150,11 @@ int main(int argc, char** argv) {
     
     close(server_fd);
     return 0;
+}
+
+void print_menu() {
+    std::cout << "1) Turn off LED\n"
+                 "2) Turn on LED\n"
+                 "3) Get status of LED"
+                 "Enter the number of the menu choice you'd like to perform: " << std::endl;
 }
