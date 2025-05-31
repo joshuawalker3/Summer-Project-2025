@@ -88,8 +88,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
-  __HAL_GPIO_EXTI_CLEAR_IT(SPI1_CS_Pin);
-  HAL_NVIC_ClearPendingIRQ(EXTI4_IRQn);
   /* USER CODE BEGIN 2 */
   init_esp32_spihandle(&esp32_spihandle, &hspi1, SPI1_CS_Pin);
   /* USER CODE END 2 */
@@ -102,6 +100,8 @@ int main(void)
 	  HAL_GPIO_WritePin(LED_CTL_GPIO_Port, LED_CTL_Pin, GPIO_PIN_RESET);
 	  HAL_Delay(100);
   }
+
+  esp32_spi_send_data(&esp32_spihandle, 1, 100);
 
   HAL_GPIO_WritePin(LED_CTL_GPIO_Port, LED_CTL_Pin, GPIO_PIN_SET);
   HAL_Delay(500);
