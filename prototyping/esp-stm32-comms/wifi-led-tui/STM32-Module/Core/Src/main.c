@@ -101,8 +101,6 @@ int main(void)
 	  HAL_Delay(100);
   }
 
-  esp32_spi_send_data(&esp32_spihandle, 1, 100);
-
   HAL_GPIO_WritePin(LED_CTL_GPIO_Port, LED_CTL_Pin, GPIO_PIN_SET);
   HAL_Delay(500);
   HAL_GPIO_WritePin(LED_CTL_GPIO_Port, LED_CTL_Pin, GPIO_PIN_RESET);
