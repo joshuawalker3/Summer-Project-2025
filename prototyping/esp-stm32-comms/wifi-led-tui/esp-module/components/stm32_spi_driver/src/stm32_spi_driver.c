@@ -54,7 +54,7 @@ esp_err_t master_read(uint8_t* data, uint16_t size) {
     trans.bits.cmd = 0;
     trans.bits.addr = 0;
 
-    trans.bits.miso = size;         
+    trans.bits.miso = size * 8;         
     trans.miso = data;         
 
     return spi_trans(HSPI_HOST, &trans);
